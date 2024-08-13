@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Переводчик азбуки Морзе</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #4a90e2;
+            margin-top: 20px;
+        }
+        .container {
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+        }
+        textarea, input, button {
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 100px;
+        }
+        button {
+            background-color: #4a90e2;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #357abd;
+        }
+        .select-wrapper {
+            margin-bottom: 10px;
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        select {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #fff;
+            appearance: none;
+            cursor: pointer;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            width: 100%;
+        }
+        select:hover, select:focus {
+            border-color: #4a90e2;
+            box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
+            outline: none;
+        }
+        select::-ms-expand {
+            display: none; /* Убираем стрелку в Internet Explorer */
+        }
+        .select-wrapper::after {
+            content: '▼';
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: #4a90e2;
+            pointer-events: none;
+        }
+        p {
+            font-size: 18px;
+            color: #4a4a4a;
+        }
+    </style>
+</head>
+<body>
+    <h1>Переводчик азбуки Морзе</h1>
+
+    <div class="container">
+        <h2>Перевод Морзе в текст</h2>
+        <div class="select-wrapper">
+            <select id="morseLanguageSelect">
+                <option value="en">Английский</option>
+                <option value="ru">Русский</option>
+            </select>
+        </div>
+        <textarea id="morseInput" placeholder="Введите текст в азбуке Морзе..."></textarea>
+        <button onclick="morseToText()">Перевести в текст</button>
+        <p id="textOutput"></p>
+    </div>
+
+    <div class="container">
+        <h2>Перевод текста в Морзе</h2>
+        <div class="select-wrapper">
+            <select id="textLanguageSelect">
+                <option value="en">Английский</option>
+                <option value="ru">Русский</option>
+            </select>
+        </div>
+        <textarea id="textInput" placeholder="Введите текст для перевода..."></textarea>
+        <button onclick="textToMorse()">Перевести в Морзе</button>
+        <p id="morseOutput"></p>
+    </div>
+
+    <script>
+        const morseCode = {
+            'en': {
+                'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.', 'F': '..-.',
+                'G': '--.', 'H': '....', 'I': '..', 'J': '.---', 'K': '-.-', 'L': '.-..',
+                'M': '--', 'N': '-.', 'O': '---', 'P': '.--.', 'Q': '--.-', 'R': '.-.',
+                'S': '...', 'T': '-', 'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-',
+                'Y': '-.--', 'Z': '--..',
+                '0': '-----', '1': '.----', '2': '..---', '3': '...--', '4': '....-', 
+                '5': '.....', '6': '-....', '7': '--...', '8': '---..', '9': '----.',
+                '.': '.-.-.-', ',': '--..--', '?': '..--..', "'": '.----.', '!': '-.-.--',
+                '/': '-..-.', '(': '-.--.', ')': '-.--.-', '&': '.-...', ':': '---...', 
+                ';': '-.-.-.', '=': '-...-', '+': '.-.-.', '-': '-....-', '_': '..--.-', 
+                '"': '.-..-.', '@': '.--.-.', ' ': '/'
+            },
+            'ru': {
+                'А': '.-', 'Б': '-...', 'В': '.--', 'Г': '--.', 'Д': '-..', 'Е': '.', 
+                'Ё': '.-', 'Ж': '...-', 'З': '--..', 'И': '..', 'Й': '.---', 'К': '-.-', 
+                'Л': '.-..-', 'М': '--', 'Н': '-.', 'О': '---', 'П': '.--.', 'Р': '.-.', 
+                'С': '...', 'Т': '-', 'У': '..-', 'Ф': '..-.', 'Х': '....', 'Ц': '-.-.', 
+                'Ч': '---.', 'Ш': '----', 'Щ': '--.-', 'Ь': '-..-', 'Ы': '-.--', 'Э': '..-..', 
+                'Ю': '..--', 'Я': '.-.-', ' ': '/', ',': '--..--', '.': '.-.-.-', 
+                '?': '..--..', '!': '-.-.--', '-': '-....-', ':': '---...', ';': '-.-.-.', 
+                '"': '.-..-.', "'": '.----.', '(': '-.--.', ')': '-.--.-', '/': '-..-.'
+            }
+        };
+
+        function getMorseCode(language) {
+            return morseCode[language];
+        }
+
+        function getReverseMorseCode(language) {
+            return Object.fromEntries(
+                Object.entries(morseCode[language]).map(([key, value]) => [value, key])
+            );
+        }
+
+        function morseToText() {
+            const language = document.getElementById('morseLanguageSelect').value;
+            const morseInput = document.getElementById('morseInput').value.trim();
+            const words = morseInput.split(' / ');  // Разделение слов символом '/'
+            const reverseMorseCode = getReverseMorseCode(language);
+            const text = words.map(word => 
+                word.split(' ').map(code => reverseMorseCode[code] || '?').join('')
+            ).join(' ');  // Один пробел для разделения букв
+            document.getElementById('textOutput').innerText = text;
+        }
+
+        function textToMorse() {
+            const language = document.getElementById('textLanguageSelect').value;
+            const textInput = document.getElementById('textInput').value.toUpperCase().trim();
+            const morseCode = getMorseCode(language);
+            const morse = textInput.split('').map(char => 
+                char === ' ' ? '/' : morseCode[char] || ' '
+            ).join(' ');  // Один пробел между буквами и '/' для разделения слов
+            document.getElementById('morseOutput').innerText = morse;
+        }
+    </script>
+</body>
+</html>
